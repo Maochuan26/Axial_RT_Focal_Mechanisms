@@ -1,9 +1,11 @@
 clc; clear;
+addpath('/Users/mczhang/Documents/GitHub/FM6_RealTime/01-scripts/subcode/');
 load('/Users/mczhang/Documents/GitHub/FM6_RealTime/02-data/C_ph2dt.mat')
 
-% Add the folder containing get_trace.py to Python path
-if count(py.sys.path, '') == 0
-    insert(py.sys.path, int32(0), '');
+% Add subcode folder to Python path so get_traceFM.py is found
+subcodeDir = '/Users/mczhang/Documents/GitHub/FM6_RealTime/01-scripts/subcode';
+if count(py.sys.path, subcodeDir) == 0
+    insert(py.sys.path, int32(0), subcodeDir);
 end
 
 % Import the module once

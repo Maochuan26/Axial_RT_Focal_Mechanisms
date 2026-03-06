@@ -7,7 +7,7 @@
 % Output              : top K=6 per query event → Po_Clu + Matches
 
 clc; clear; close all;
-addpath /Users/mczhang/Documents/GitHub/FM/01-scripts/subcode/
+addpath('/Users/mczhang/Documents/GitHub/FM6_RealTime/01-scripts/subcode/');
 
 fields = {'AS1','AS2','CC1','EC1','EC2','EC3','ID1'};
 K              = 6;      % top matches per new event

@@ -2,8 +2,7 @@
 % Plot focal mechanisms from H_FM.mat for past 24 h, 7 days, and 30 days.
 % Run after the full B→H pipeline.
 clc; clear; close all;
-run('/Users/mczhang/Documents/GitHub/FM6_RealTime/FM_buildpath6.m');
-addpath '/Users/mczhang/Documents/GitHub/FM/01-scripts/matlab_ww'
+addpath('/Users/mczhang/Documents/GitHub/FM6_RealTime/01-scripts/subcode/');
 
 %% ---- Load data ----
 load('/Users/mczhang/Documents/GitHub/FM6_RealTime/02-data/H_FM.mat');   % event1, event2, event3

@@ -3,7 +3,7 @@ clc; clear; close all;
 data_mat   = '/Users/mczhang/Documents/GitHub/FM6_RealTime/02-data/E_NSP.mat';
 model_path = '/Users/mczhang/Documents/GitHub/FM6_RealTime/02-data/PolarPicker_unified_TMSF_001.keras';
 out_mat    = '/Users/mczhang/Documents/GitHub/FM6_RealTime/02-data/F_DLpol.mat';
-py_script  = '/Users/mczhang/Documents/GitHub/FM6_RealTime/01-scripts/predict_polarity.py';
+py_script  = '/Users/mczhang/Documents/GitHub/FM6_RealTime/01-scripts/subcode/predict_polarity.py';
 
 python_exe = '/opt/miniconda3/envs/FM_RT/bin/python';  % ← FM_RT env
 

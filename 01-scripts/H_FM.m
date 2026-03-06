@@ -1,8 +1,8 @@
 % Define parameters
 clc;clear;close all;
-addpath '/Users/mczhang/Documents/GitHub/FM/01-scripts/matlab_ww'
+addpath('/Users/mczhang/Documents/GitHub/FM6_RealTime/01-scripts/subcode/');
 path='/Users/mczhang/Documents/GitHub/FM6_RealTime/02-data';
-path_FM= '/Users/mczhang/Documents/GitHub/FM/01-scripts/HASH_Manual_5test';
+path_FM= '/Users/mczhang/Documents/GitHub/FM/01-scripts/HASH_Manual_5test';  % HASH binary + config (not moved — compiled executable)
 fields={'AS1','AS2','CC1','EC1','EC2','EC3','ID1'};
 
 

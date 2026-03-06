@@ -1,4 +1,5 @@
 clc;clear;
+addpath('/Users/mczhang/Documents/GitHub/FM6_RealTime/01-scripts/subcode/');
 load('/Users/mczhang/Documents/GitHub/FM6_RealTime/02-data/B_ph2dt_past30days_combined_until_20260225.mat')
 % Station name to field name mapping
 staMap = { ...

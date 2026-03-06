@@ -4,6 +4,7 @@
 % "today" fixed to Feb 25, 2026
 %% =========================================================
 clc;clear;
+addpath('/Users/mczhang/Documents/GitHub/FM6_RealTime/01-scripts/subcode/');
 inDir = '/Applications/MAMP/htdocs/ph2dtInputCatalog';
 
 % Define "today" (end-of-day)

@@ -1,10 +1,10 @@
 clear; close all;
 
+addpath('/Users/mczhang/Documents/GitHub/FM6_RealTime/01-scripts/subcode/');
 fields = {'AS1','AS2','CC1','EC1','EC2','EC3','ID1'};
 load('/Users/mczhang/Documents/GitHub/FM6_RealTime/02-data/D_wave2.mat')
 Felix([Felix.mag]<1)=[];
-parameterFile = 'parameter_script_realtimeVer1_MC_focal';
-run(parameterFile); % loads p into workspace
+run('/Users/mczhang/Documents/GitHub/FM6_RealTime/01-scripts/subcode/parameter_script_realtimeVer1_MC_focal.m'); % loads p into workspace
 
 %% Settings
 P.a.sttime  = -3;

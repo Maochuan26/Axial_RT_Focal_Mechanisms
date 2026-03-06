@@ -14,7 +14,7 @@
 
 # Temporary trace files
 01-scripts/py_trace.mat
-01-scripts/Tilt_Anorm/*.mat
+01-scripts/subcode/Tilt_Anorm/*.mat
 
 # Python cache
 01-scripts/__pycache__/
