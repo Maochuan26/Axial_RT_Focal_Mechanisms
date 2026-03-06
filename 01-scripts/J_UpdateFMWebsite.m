@@ -50,8 +50,11 @@ fprintf(fid, '<p>Maps are updated each pipeline run (approximately daily). Last 
 fprintf(fid, '<h3>Contents</h3>\n\n');
 fprintf(fid, '<a href="#name1">Recent Focal Mechanism Maps</a>\n<br>\n');
 fprintf(fid, '<a href="#name2">Daily Focal Mechanism Archive</a>\n<br>\n');
-fprintf(fid, '<a href="#name3">Daily Catalogs and Maps</a>\n<br>\n');
-fprintf(fid, '<a href="#name4">Full Catalog</a>\n<br>\n\n');
+fprintf(fid, '<a href="#name3">Histograms of Recent Activity</a>\n<br>\n');
+fprintf(fid, '<a href="#name4">Histograms of 2015 Eruption</a>\n<br>\n');
+fprintf(fid, '<a href="#name5">Histograms of Full Catalog</a>\n<br>\n');
+fprintf(fid, '<a href="#name6">Daily Catalogs and Maps</a>\n<br>\n');
+fprintf(fid, '<a href="#name7">Full Catalog</a>\n<br>\n\n');
 
 %% Recent maps
 fprintf(fid, '<a name="name1"></a>\n');
@@ -76,8 +79,34 @@ for i = 1:length(runDates)
     fprintf(fid, '<br>\n');
 end
 
-%% Daily Catalogs and Maps
+%% Histograms of Recent Activity
 fprintf(fid, '<a name="name3"></a>\n');
+fprintf(fid, '<h3>Histograms of Recent Activity</h3>\n\n');
+fprintf(fid, '<a href="histogram7day.jpg"><img src="histogram7day.jpg" alt="7 day" width="300"/></a>\n');
+fprintf(fid, '<a href="histogram30day.jpg"><img src="histogram30day.jpg" alt="30 day" width="300"/></a>\n');
+fprintf(fid, '<a href="histogram1Year.jpg"><img src="histogram1Year.jpg" alt="1 Year" width="300"/></a>\n');
+fprintf(fid, '<br>\n\n');
+
+%% Histograms of 2015 Eruption
+fprintf(fid, '<a name="name4"></a>\n');
+fprintf(fid, '<h3>Histograms of 2015 Eruption</h3>\n\n');
+fprintf(fid, '<a href="histogramEruption2015.jpg"><img src="histogramEruption2015.jpg" alt="2015 Eruption" width="300"/></a>\n');
+fprintf(fid, '<a href="histogramEruption60day.jpg"><img src="histogramEruption60day.jpg" alt="Eruption 60 day" width="300"/></a>\n');
+fprintf(fid, '<a href="histogramEruption15day.jpg"><img src="histogramEruption15day.jpg" alt="Eruption 15 day" width="300"/></a>\n');
+fprintf(fid, '<br>\n\n');
+
+%% Histograms of Full Catalog
+fprintf(fid, '<a name="name5"></a>\n');
+fprintf(fid, '<h3>Histograms of Full Catalog</h3>\n\n');
+fprintf(fid, '<a href="histogramAll1.jpg"><img src="histogramAll1.jpg" alt="Full Catalog 1" width="300"/></a>\n');
+fprintf(fid, '<a href="histogramAll2.jpg"><img src="histogramAll2.jpg" alt="Full Catalog 2" width="300"/></a>\n');
+fprintf(fid, '<br>\n');
+fprintf(fid, '<a href="histogramAll3.jpg"><img src="histogramAll3.jpg" alt="Full Catalog 3" width="300"/></a>\n');
+fprintf(fid, '<a href="histogramAll4.jpg"><img src="histogramAll4.jpg" alt="Full Catalog 4" width="300"/></a>\n');
+fprintf(fid, '<br>\n\n');
+
+%% Daily Catalogs and Maps
+fprintf(fid, '<a name="name6"></a>\n');
 fprintf(fid, '<h3>Daily Catalogs and Maps</h3>\n\n');
 fprintf(fid, '<p>Caldera Maps &nbsp; <a href="map1.html">map1.html</a></p>\n');
 fprintf(fid, '<p>Regional Maps &nbsp; <a href="map2.html">map2.html</a></p>\n');
@@ -85,7 +114,7 @@ fprintf(fid, '<p>Daily HYPO71 files &nbsp; <a href="hypo71.html">hypo71.html</a>
 fprintf(fid, '<p>Daily ph2dt input files &nbsp; <a href="ph2dt.html">ph2dt.html</a></p>\n\n');
 
 %% Full Catalog
-fprintf(fid, '<a name="name4"></a>\n');
+fprintf(fid, '<a name="name7"></a>\n');
 fprintf(fid, '<h3>Full Catalog (Big Files)</h3>\n\n');
 fprintf(fid, '<p>HYPO71 style catalog &mdash; <a href="hypo71.dat">hypo71.dat</a></p>\n');
 fprintf(fid, '<p>Arrival time data in form of input catalog for ph2dt algorithm of HYPODD &mdash; <a href="ph2dtInputCatalog.dat">ph2dtInputCatalog.dat</a></p>\n\n');
