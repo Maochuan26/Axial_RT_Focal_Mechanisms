@@ -68,6 +68,9 @@ for kp = 1:3
 
     fig = figure('Position', [100, 100, 950, 900], ...
         'InvertHardcopy', 'off', 'Color', 'white');
+    set(fig, 'PaperUnits', 'inches', ...
+             'PaperSize',     [9.5 9.0], ...
+             'PaperPosition', [0   0   9.5 9.0]);
     ax = axes('Parent', fig, 'Position', [0.13 0.12 0.76 0.72]);
 
     basemap_2015v2(lonLim, latLim, 100, [0 0], 1, false, ax);
@@ -136,7 +139,7 @@ for kp = 1:3
     tag           = sprintf('%dday', windows(kp));
     fname_current = fullfile(graphicsDir,   sprintf('FocalMechanism%s.jpg', tag));
     fname_archive = fullfile(graphicsFmDir, sprintf('FM%s_%s.jpg', tag, dateStr));
-    print(fig, fname_current, '-djpeg', '-r200');
+    exportgraphics(fig, fname_current, 'Resolution', 150, 'BackgroundColor', 'white');
     copyfile(fname_current, fname_archive);
     copyfile(fname_current, fullfile(htdocs,      sprintf('FocalMechanism%s.jpg', tag)));
     copyfile(fname_archive,  fullfile(htdocsFmDir, sprintf('FM%s_%s.jpg', tag, dateStr)));
