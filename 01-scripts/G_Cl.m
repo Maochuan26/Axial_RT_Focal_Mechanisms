@@ -1,157 +1,127 @@
-%% Match new Felixw events to base catalog Po by similarity, pick top K
-clc; clear; close all;
+%% G_Cl.m
+% Hierarchical matching: new events → base catalog top-6 analogs
+%
+% Stage 1 (hard gate) : 3-D distance ≤ loc_thresh_km  (default 1 km)
+% Stage 2 (rank 1)    : polarity agreement across 7 stations  (ascending mismatch)
+% Stage 3 (rank 2)    : SP amplitude ratio similarity          (ascending misfit)
+% Output              : top K=6 per query event → Po_Clu + Matches
 
+clc; clear; close all;
 addpath /Users/mczhang/Documents/GitHub/FM/01-scripts/subcode/
 
 fields = {'AS1','AS2','CC1','EC1','EC2','EC3','ID1'};
-K = 6;                          % top K similar base events per new event
+K              = 6;      % top matches per new event
+loc_thresh_km  = 1.0;    % stage-1 hard gate (km, 3-D)
 
-% weights (tune these)
-wLoc = 3;
-wSpr = 7;
-wPo  = 100;
-
-% thresholds (optional; set [] to disable)
-maxPoMismatch = 0;              % fraction of polarity mismatches (0 = perfect match). set [] to disable
-maxSprMisfit  = 0.2;            % normalized SP Euclidean misfit. set [] to disable
-maxLocMisfit  = 0.2;            % IQR-normalized loc misfit. set [] to disable
-
-%% ---- Load base catalog (big) ----
-% Example: base is "Po" from your old files (after quality filters)
-load('/Users/mczhang/Documents/GitHub/FM6_RealTime/02-data/A_All.mat')  % <-- change to your base catalog file
+%% ---- Load base catalog ----
+load('/Users/mczhang/Documents/GitHub/FM6_RealTime/02-data/A_All.mat')
 Po = Felix; clear Felix;
 
-% quality filter (keep your rules)
-min_Po_num = 5;
-min_SP_num = 5;
-Po = Po([Po.PoALL] > min_Po_num & [Po.SP_All] > min_SP_num);
+% quality filter
+Po = Po([Po.PoALL] > 5 & [Po.SP_All] > 5);
+fprintf('Base catalog: %d events\n', numel(Po));
 
-fprintf('Base catalog size: %d\n', numel(Po));
-
-%% ---- Load new catalog (28) with ML results ----
-load('/Users/mczhang/Documents/GitHub/FM6_RealTime/02-data/F_DLpol.mat'); % <-- change
+%% ---- Load new events (ML polarity output) ----
+load('/Users/mczhang/Documents/GitHub/FM6_RealTime/02-data/F_DLpol.mat');
 Felixw = Felix; clear Felix;
-fprintf('New catalog size: %d\n', numel(Felixw));
+fprintf('New events  : %d\n', numel(Felixw));
 
-%% ---- Precompute base feature matrices ----
-% location (convert lat/lon to local xy)
-base_loc = [[Po.lat]', [Po.lon]', [Po.depth]'];
-[base_loc(:,1), base_loc(:,2)] = latlon2xy(base_loc(:,1), base_loc(:,2));
+%% ---- Pre-compute base feature matrices ----
 
-% polarities & SP ratios for base (Nbase x 7)
-base_po  = zeros(numel(Po), numel(fields));
-base_spr = zeros(numel(Po), numel(fields));
+% Location in local km (lat/lon → x/y, depth already km)
+base_latlon = [[Po.lat]', [Po.lon]'];
+[base_xy(:,1), base_xy(:,2)] = latlon2xy(base_latlon(:,1), base_latlon(:,2));
+base_depth = [Po.depth]';
 
+% Polarity matrix  [Nbase x 7]  — stored as ±1 or 0 in base catalog Po_<STA>
+base_po = zeros(numel(Po), numel(fields));
 for k = 1:numel(fields)
-    fk = fields{k};
-    % polarity fields assumed Po_<STA> in base
-    base_po(:,k)  = [Po.(['Po_' fk])]';
-    % S/P fields assumed SP_<STA> in base
-    base_spr(:,k) = [Po.(['SP_' fk])]';
+    base_po(:,k) = [Po.(['Po_' fields{k}])]';
 end
 
-% normalize location scale (so loc distance ~ 0-1)
-% use robust ranges (avoid outliers)
-loc_scale = iqr(base_loc,1);
-loc_scale(loc_scale==0) = 1;
-base_locN = base_loc ./ loc_scale;
+% SP ratio matrix  [Nbase x 7]  — stored directly as SP_<STA> in base catalog
+base_spr = zeros(numel(Po), numel(fields));
+for k = 1:numel(fields)
+    base_spr(:,k) = [Po.(['SP_' fields{k}])]';
+end
 
 %% ---- Output containers ----
 Matches = struct([]);
 
-%% ---- Loop new events: find top K similar base events ----
+%% ---- Main loop: match each new event ----
 for i = 1:numel(Felixw)
 
     q = Felixw(i);
 
-    % query location
-    q_loc = [q.lat, q.lon, q.depth];
-    [q_loc(1), q_loc(2)] = latlon2xy(q_loc(1), q_loc(2));
-    q_locN = q_loc ./ loc_scale;
+    % --- query location ---
+    [qx, qy] = latlon2xy(q.lat, q.lon);
 
-    % query polarity & SP (1x7)
-    q_po  = zeros(1,numel(fields));
-    q_spr = zeros(1,numel(fields));
+    % --- STAGE 1: 3-D distance gate (km) ---
+    dist3d = sqrt((base_xy(:,1)-qx).^2 + ...
+                  (base_xy(:,2)-qy).^2 + ...
+                  (base_depth - q.depth).^2);
 
+    inGate = find(dist3d <= loc_thresh_km);
+
+    if numel(inGate) < K
+        % Not enough neighbors within 1 km — expand to nearest K
+        [~, nearest] = mink(dist3d, K);
+        inGate = nearest;
+        fprintf('  Query %d (ID=%d): only %d within %.1f km, expanded to nearest %d\n', ...
+            i, q.ID, sum(dist3d <= loc_thresh_km), loc_thresh_km, K);
+    end
+
+    % --- query polarity (1x7): take pred = Po_<STA>(1) ---
+    q_po = zeros(1, numel(fields));
     for k = 1:numel(fields)
-        fk = fields{k};
+        v = q.(['Po_' fields{k}]);
+        if ~isempty(v); q_po(k) = v(1); end
+    end
 
-        % Your new file sometimes stores Po_<STA> as scalar or [pred conf ent]
-        % Handle both:
-        vpo = q.(['Po_' fk]);
-        if isempty(vpo)
-            q_po(k) = 0;
-        elseif numel(vpo) >= 1
-            q_po(k) = vpo(1);   % take pred
-        else
-            q_po(k) = 0;
+    % --- query SP ratio (1x7): log(P_amp / noise_amp) from NSP_<STA> ---
+    q_spr = zeros(1, numel(fields));
+    for k = 1:numel(fields)
+        v = q.(['NSP_' fields{k}]);
+        if ~isempty(v) && numel(v) >= 3 && v(1) > 0 && mean(v) ~= 1
+            q_spr(k) = log(v(3) / v(1));
         end
-
-        vspr = q.(['NSP_' fk]);
-        if isempty(vspr) || mean(vspr)==1, q_spr(k) = 0; 
-        
-        else
-            q_spr(k) = log(vspr(3)/vspr(1));
-        end
-        
-        
     end
 
-    % ----- compute distance to every base event -----
-    % 1) loc distance (IQR-normalized Euclidean, then scaled 0..1)
-    dLoc = sqrt(sum((base_locN - q_locN).^2, 2));
-    dLoc = dLoc ./ max(dLoc + eps);  % 0..1
+    % --- STAGE 2: polarity mismatch (vectorized) ---
+    sub_po  = base_po(inGate, :);          % [M x 7]
+    both_nz = (q_po ~= 0) & (sub_po ~= 0);
+    mismatch = (q_po ~= sub_po) & both_nz;
+    n_pairs  = sum(both_nz, 2);
+    dPo = sum(mismatch, 2) ./ max(n_pairs, 1);   % 0 = perfect, 1 = all wrong
 
-    % 2) polarity misfit: fraction of mismatches among non-zero pairs [0..1]
-    dPo = custom_distance_Po(q_po, base_po);
+    % --- STAGE 3: SP ratio misfit (vectorized) ---
+    sub_spr  = base_spr(inGate, :);        % [M x 7]
+    valid    = (q_spr ~= 0) & (sub_spr ~= 0);
+    diff_sq  = (q_spr - sub_spr).^2 .* valid;
+    n_valid  = max(sum(valid, 2), 1);
+    dSpr = sqrt(sum(diff_sq, 2)) ./ n_valid;      % normalized Euclidean
 
-    % 3) SP ratio misfit: normalized Euclidean on non-zero pairs [0..1]
-    dSpr = custom_distance_SPr(q_spr, base_spr);
+    % --- Sort: primary dPo, secondary dSpr → top K ---
+    [~, ord] = sortrows([dPo, dSpr], [1, 2]);
+    topOrd   = ord(1:min(K, numel(ord)));
+    I        = inGate(topOrd);
 
-    % total distance
-    D = wLoc*dLoc + wSpr*dSpr + wPo*dPo;
+    % --- Store ---
+    Matches(i).QueryID    = q.ID;
+    Matches(i).QueryIndex = i;
+    Matches(i).MatchIndex = I(:)';
+    Matches(i).MatchID    = [Po(I).ID];
+    Matches(i).Dist3D_km  = dist3d(I)';
+    Matches(i).PoDist     = dPo(topOrd)';
+    Matches(i).SprDist    = dSpr(topOrd)';
 
-    % apply optional hard filters (recommended)
-    keep = true(size(D));
-
-    if ~isempty(maxPoMismatch)
-        keep = keep & (dPo <= maxPoMismatch);
-    end
-    if ~isempty(maxSprMisfit)
-        keep = keep & (dSpr <= maxSprMisfit);
-    end
-    if ~isempty(maxLocMisfit)
-        keep = keep & (sqrt(sum((base_locN - q_locN).^2, 2)) <= maxLocMisfit);
-    end
-
-    idxKeep = find(keep);
-    if isempty(idxKeep)
-        % fallback: no one passed filters -> just take top K by D
-        [~, I] = mink(D, K);
-    else
-        [~, ord] = sort(D(idxKeep), 'ascend');
-        I = idxKeep(ord(1:min(K, numel(ord))));
-    end
-
-    % store matches
-    Matches(i).QueryID     = q.ID;
-    Matches(i).QueryIndex  = i;
-    Matches(i).MatchIndex  = I(:)';
-    Matches(i).MatchID     = [Po(I).ID];
-    Matches(i).Distance    = D(I)';
-    Matches(i).LocDist     = dLoc(I)';
-    Matches(i).PoDist      = dPo(I)';
-    Matches(i).SprDist     = dSpr(I)';
-
-    fprintf('Query %d (ID=%d): top match IDs = %s\n', ...
-        i, q.ID, mat2str(Matches(i).MatchID));
+    fprintf('Query %d (ID=%d): top match IDs = %s  [%.2f km | dPo=%.2f | dSpr=%.2f]\n', ...
+        i, q.ID, mat2str(Matches(i).MatchID), ...
+        mean(Matches(i).Dist3D_km), mean(Matches(i).PoDist), mean(Matches(i).SprDist));
 
 end
 
-%% ---- Build Po_Clu: 1 new event + top-K base events per cluster ----
-% Each cluster i = [Felixw(i), Po(top-K matches)] with Cluster = i
-% Field order matches F_Cl_All_ML_polish.mat; missing fields filled with NaN
-
+%% ---- Build Po_Clu: 1 query + top-K base events per cluster ----
 ordered_fields = { ...
     'ID','on','lat','lon','depth', ...
     'DDt_AS1','DDSt_AS1','DDt_AS2','DDSt_AS2', ...
@@ -171,20 +141,19 @@ row = 0;
 
 for i = 1:numel(Matches)
 
-    % ---- first entry: new query event ----
+    % --- query event row ---
     row = row + 1;
     for f = ordered_fields
         fn = f{1};
-        nsp_fn = ['NSP_' fn(4:end)];
         if strcmp(fn, 'Cluster')
             Po_Clu(row).Cluster = i;
-        elseif strncmp(fn, 'SP_', 3) && ~strcmp(fn, 'SP_All') && isfield(Felixw, nsp_fn)
-            vspr = Felixw(i).(nsp_fn);
-            if isnumeric(vspr); vspr = double(vspr(:)); else; vspr = []; end
-            if isempty(vspr) || numel(vspr) < 3 || mean(vspr) == 1 || vspr(1) == 0 || ~all(isfinite(vspr))
-                Po_Clu(row).(fn) = NaN;
-            else
+        elseif strncmp(fn, 'SP_', 3) && ~strcmp(fn, 'SP_All') && isfield(Felixw, ['NSP_' fn(4:end)])
+            vspr = Felixw(i).(['NSP_' fn(4:end)]);
+            if isnumeric(vspr) && numel(vspr) >= 3 && vspr(1) > 0 && ...
+               mean(vspr) ~= 1 && all(isfinite(vspr))
                 Po_Clu(row).(fn) = log(vspr(3) / vspr(1));
+            else
+                Po_Clu(row).(fn) = NaN;
             end
         elseif isfield(Felixw, fn)
             Po_Clu(row).(fn) = Felixw(i).(fn);
@@ -193,16 +162,16 @@ for i = 1:numel(Matches)
         end
     end
 
-    % ---- next entries: matched base catalog events ----
-    idx = Matches(i).MatchIndex;
-    for m = 1:numel(idx)
+    % --- matched base events ---
+    for m = 1:numel(Matches(i).MatchIndex)
         row = row + 1;
+        idx = Matches(i).MatchIndex(m);
         for f = ordered_fields
             fn = f{1};
             if strcmp(fn, 'Cluster')
                 Po_Clu(row).Cluster = i;
             elseif isfield(Po, fn)
-                Po_Clu(row).(fn) = Po(idx(m)).(fn);
+                Po_Clu(row).(fn) = Po(idx).(fn);
             else
                 Po_Clu(row).(fn) = NaN;
             end
@@ -211,11 +180,8 @@ for i = 1:numel(Matches)
 
 end
 
-fprintf('Po_Clu: %d events in %d clusters (1 new + %d base each)\n', ...
+fprintf('\nPo_Clu: %d events in %d clusters (1 query + up to %d base each)\n', ...
     numel(Po_Clu), numel(Matches), K);
 
 save('/Users/mczhang/Documents/GitHub/FM6_RealTime/02-data/G_Cl.mat', 'Matches', 'Po_Clu', '-v7.3');
-disp('Saved: G_cl.mat');
-
-% custom_distance_Po and custom_distance_SPr are loaded via:
-% addpath /Users/mczhang/Documents/GitHub/FM/01-scripts/subcode/
+disp('Saved: G_Cl.mat');
