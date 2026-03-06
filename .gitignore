@@ -1,0 +1,33 @@
+# Base catalog - too large for GitHub (601 MB)
+02-data/A_All.mat
+
+# Intermediate pipeline outputs (regenerated each run)
+02-data/B_ph2dt_past30days_combined_until_*.mat
+02-data/C_ph2dt.mat
+02-data/D_wave.mat
+02-data/D_wave2.mat
+02-data/E_NSP.mat
+02-data/F_DLpol.mat
+02-data/G_cl.mat
+02-data/H_FM.mat
+02-data/Py_trace.mat
+
+# Temporary trace files
+01-scripts/py_trace.mat
+01-scripts/Tilt_Anorm/*.mat
+
+# Python cache
+01-scripts/__pycache__/
+
+# Generated figures
+03-graphics/
+
+# Claude settings
+.claude/
+
+# MATLAB temp files
+*.asv
+*.m~
+
+# macOS
+.DS_Store
