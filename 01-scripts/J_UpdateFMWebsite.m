@@ -49,7 +49,9 @@ fprintf(fid, '<p>Maps are updated each pipeline run (approximately daily). Last 
 %% Contents
 fprintf(fid, '<h3>Contents</h3>\n\n');
 fprintf(fid, '<a href="#name1">Recent Focal Mechanism Maps</a>\n<br>\n');
-fprintf(fid, '<a href="#name2">Daily Focal Mechanism Archive</a>\n<br>\n\n');
+fprintf(fid, '<a href="#name2">Daily Focal Mechanism Archive</a>\n<br>\n');
+fprintf(fid, '<a href="#name3">Daily Catalogs and Maps</a>\n<br>\n');
+fprintf(fid, '<a href="#name4">Full Catalog</a>\n<br>\n\n');
 
 %% Recent maps
 fprintf(fid, '<a name="name1"></a>\n');
@@ -73,6 +75,20 @@ for i = 1:length(runDates)
     fprintf(fid, '<a href="focalmechanismsdaily/FM30day_%s.jpg">30 days</a>', d);
     fprintf(fid, '<br>\n');
 end
+
+%% Daily Catalogs and Maps
+fprintf(fid, '<a name="name3"></a>\n');
+fprintf(fid, '<h3>Daily Catalogs and Maps</h3>\n\n');
+fprintf(fid, '<p>Caldera Maps &nbsp; <a href="map1.html">map1.html</a></p>\n');
+fprintf(fid, '<p>Regional Maps &nbsp; <a href="map2.html">map2.html</a></p>\n');
+fprintf(fid, '<p>Daily HYPO71 files &nbsp; <a href="hypo71.html">hypo71.html</a></p>\n');
+fprintf(fid, '<p>Daily ph2dt input files &nbsp; <a href="ph2dt.html">ph2dt.html</a></p>\n\n');
+
+%% Full Catalog
+fprintf(fid, '<a name="name4"></a>\n');
+fprintf(fid, '<h3>Full Catalog (Big Files)</h3>\n\n');
+fprintf(fid, '<p>HYPO71 style catalog &mdash; <a href="hypo71.dat">hypo71.dat</a></p>\n');
+fprintf(fid, '<p>Arrival time data in form of input catalog for ph2dt algorithm of HYPODD &mdash; <a href="ph2dtInputCatalog.dat">ph2dtInputCatalog.dat</a></p>\n\n');
 
 fprintf(fid, '\n</body>\n</html>\n');
 fclose(fid);
