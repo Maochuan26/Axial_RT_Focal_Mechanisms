@@ -66,15 +66,16 @@ defaultC    = struct('N',[0,0,1],'R',[1,0,0],'S',[0,1,0],'U',[0,0,0]);
 %%
 for kp = 1:3
 
-    fig = figure('Position', [100, 100, 700, 680], ...
+    fig = figure('Position', [100, 100, 950, 900], ...
         'InvertHardcopy', 'off', 'Color', 'white');
-    ax = axes('Parent', fig, 'Position', [0.12 0.12 0.78 0.72]);
+    ax = axes('Parent', fig, 'Position', [0.13 0.12 0.76 0.72]);
 
     basemap_2015v2(lonLim, latLim, 100, [0 0], 1, false, ax);
     pbaspect(ax, [diff(lonLim)*cosd(mean(latLim)) diff(latLim) 1]);
     hold(ax, 'on');
     set(ax, 'XTick', -130.03:0.01:-129.97, ...
-            'GridLineStyle', '-', 'LineWidth', 0.5, 'GridColor', [0.5 0.5 0.5]);
+            'GridLineStyle', '-', 'LineWidth', 0.5, 'GridColor', [0.5 0.5 0.5], ...
+            'FontSize', 14);
     grid(ax, 'on');
 
     %% ---- Filter events for this time window ----
@@ -95,9 +96,9 @@ for kp = 1:3
 
     %% ---- Labels ----
     title(ax, sprintf('%d FMs  —  %s\nUpdated %s UTC', ...
-        nmec, winLabels{kp}, datestr(tNow, 'yyyy-mm-dd HH:MM')), 'FontSize', 13);
-    xlabel(ax, 'Longitude (°)', 'FontSize', 12);
-    ylabel(ax, 'Latitude (°)', 'FontSize', 12);
+        nmec, winLabels{kp}, datestr(tNow, 'yyyy-mm-dd HH:MM')), 'FontSize', 18);
+    xlabel(ax, 'Longitude (°)', 'FontSize', 16);
+    ylabel(ax, 'Latitude (°)', 'FontSize', 16);
     grid(ax, 'on');
 
     %% ---- Legend ----
@@ -119,7 +120,7 @@ for kp = 1:3
                 'MarkerEdgeColor','k', 'MarkerSize', 8);
         end
         text(legendX + 0.003, legendYs(k), faultLabels{k}, ...
-            'HorizontalAlignment','left', 'FontSize', 10);
+            'HorizontalAlignment','left', 'FontSize', 14);
     end
 
     % Legend box
@@ -135,7 +136,7 @@ for kp = 1:3
     tag           = sprintf('%dday', windows(kp));
     fname_current = fullfile(graphicsDir,   sprintf('FocalMechanism%s.jpg', tag));
     fname_archive = fullfile(graphicsFmDir, sprintf('FM%s_%s.jpg', tag, dateStr));
-    print(fig, fname_current, '-djpeg', '-r150');
+    print(fig, fname_current, '-djpeg', '-r200');
     copyfile(fname_current, fname_archive);
     copyfile(fname_current, fullfile(htdocs,      sprintf('FocalMechanism%s.jpg', tag)));
     copyfile(fname_archive,  fullfile(htdocsFmDir, sprintf('FM%s_%s.jpg', tag, dateStr)));
