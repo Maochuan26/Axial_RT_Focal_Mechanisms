@@ -71,7 +71,7 @@ for kp = 1:3
     set(fig, 'PaperUnits', 'inches', ...
              'PaperSize',     [9.5 9.0], ...
              'PaperPosition', [0   0   9.5 9.0]);
-    ax = axes('Parent', fig, 'Position', [0.13 0.12 0.76 0.72]);
+    ax = axes('Parent', fig, 'Position', [0.13 0.18 0.76 0.65]);
 
     basemap_2015v2(lonLim, latLim, 100, [0 0], 1, false, ax);
     pbaspect(ax, [diff(lonLim)*cosd(mean(latLim)) diff(latLim) 1]);
