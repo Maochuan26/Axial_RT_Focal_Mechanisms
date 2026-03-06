@@ -78,7 +78,7 @@ for kp = 1:3
     hold(ax, 'on');
     set(ax, 'XTick', -130.03:0.01:-129.97, ...
             'GridLineStyle', '-', 'LineWidth', 0.5, 'GridColor', [0.5 0.5 0.5], ...
-            'FontSize', 24);
+            'FontSize', 32);
     grid(ax, 'on');
 
     %% ---- Filter events for this time window ----
@@ -99,9 +99,9 @@ for kp = 1:3
 
     %% ---- Labels ----
     title(ax, sprintf('%d FMs  —  %s\nUpdated %s UTC', ...
-        nmec, winLabels{kp}, datestr(tNow, 'yyyy-mm-dd HH:MM')), 'FontSize', 32);
-    xlabel(ax, 'Longitude (°)', 'FontSize', 26);
-    ylabel(ax, 'Latitude (°)', 'FontSize', 26);
+        nmec, winLabels{kp}, datestr(tNow, 'yyyy-mm-dd HH:MM')), 'FontSize', 42);
+    xlabel(ax, 'Longitude (°)', 'FontSize', 36);
+    ylabel(ax, 'Latitude (°)', 'FontSize', 36);
     grid(ax, 'on');
 
     %% ---- Legend ----
@@ -123,7 +123,7 @@ for kp = 1:3
                 'MarkerEdgeColor','k', 'MarkerSize', 8);
         end
         text(legendX + 0.003, legendYs(k), faultLabels{k}, ...
-            'HorizontalAlignment','left', 'FontSize', 22);
+            'HorizontalAlignment','left', 'FontSize', 30);
     end
 
     % Legend box
