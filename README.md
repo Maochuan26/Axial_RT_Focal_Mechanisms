@@ -2,7 +2,8 @@
 
 Near-real-time focal mechanism estimation for earthquakes at [Axial Seamount](https://en.wikipedia.org/wiki/Axial_Seamount) recorded by the [Ocean Observatories Initiative (OOI)](https://oceanobservatories.org/) cabled array.
 
-**by [Maochuan Zhang](https://www.ocean.washington.edu/home/Maochuan_Zhang), University of Washington**
+**by [Maochuan Zhang](https://www.ocean.washington.edu/home/Maochuan_Zhang)**
+5th-year PhD Student, School of Oceanography, University of Washington, Seattle
 
 ---
 
