@@ -105,7 +105,8 @@ end
 hold on;
 
 hold on;
-fiss=importdata('/Users/mczhang/Documents/GitHub/FM6_RealTime/01-scripts/subcode/data/Axial-2015-fissures-points-geo-v2.txt');
+dataDir_bm = fullfile(fileparts(which('basemap_2015v2')), 'data');
+fiss=importdata(fullfile(dataDir_bm, 'Axial-2015-fissures-points-geo-v2.txt'));
 fiss=[fiss.data];
 ind=unique(fiss(:,1));
 for i=1:length(ind)
@@ -127,7 +128,7 @@ hold on;
 %     hold on;
 % end
 
-fiss=importdata('/Users/mczhang/Documents/GitHub/FM6_RealTime/01-scripts/subcode/data/Axial-2011-fissures-points-geo-v2.txt');
+fiss=importdata(fullfile(dataDir_bm, 'Axial-2011-fissures-points-geo-v2.txt'));
 fiss=[fiss.data];
 ind=unique(fiss(:,1));
 for i=1:length(ind)
@@ -139,7 +140,7 @@ end
 hold on;
 %clear;
 
-fiss=load('/Users/mczhang/Documents/GitHub/FM6_RealTime/01-scripts/subcode/data/Axial-1998-Fissures.txt');
+fiss=load(fullfile(dataDir_bm, 'Axial-1998-Fissures.txt'));
 ind=unique(fiss(:,1));
 for i=1:length(ind)
     ind_p=find(fiss(:,1)==ind(i));

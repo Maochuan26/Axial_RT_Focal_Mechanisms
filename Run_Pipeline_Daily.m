@@ -1,5 +1,5 @@
 %% Run_Pipeline_Daily.m
-% Runs the full B→H pipeline for today's date.
+% Runs the full A→I pipeline for today's date.
 % Run once per day in MATLAB R2023a.
 % Usage: run('Run_Pipeline_Daily.m')  (from repo root, after FM_buildpath6.m)
 %% =========================================================
@@ -7,12 +7,11 @@
 clc; clear; close all;
 
 %% ---- 0. Paths & date ----
-run('FM_buildpath6.m');
-addpath /Users/mczhang/Documents/GitHub/FM/01-scripts/subcode/
+run('config.m');
 
-outDir   = '/Users/mczhang/Documents/GitHub/FM6_RealTime/02-data';
-inDir    = '/Applications/MAMP/htdocs/ph2dtInputCatalog';
-script_dir = '/Users/mczhang/Documents/GitHub/FM6_RealTime/01-scripts';
+outDir     = cfg.dataDir;
+inDir      = fullfile(cfg.htdocs, 'ph2dtInputCatalog');
+script_dir = cfg.scriptsDir;
 
 tEnd = floor(now) + datenum(0,0,0,23,59,59);   % end of today
 dateTag = datestr(tEnd, 'yyyymmdd');
@@ -21,9 +20,27 @@ fprintf(' Pipeline run: %s\n', datestr(tEnd, 'yyyy-mm-dd'));
 fprintf('========================================\n\n');
 
 %% ============================
-%% ---- STAGE B: Read catalog ----
+%% ---- Archive previous day's outputs ----
 %% ============================
-fprintf('--- B: Reading past 30 days of catalog ---\n');
+archiveDir = fullfile(outDir, 'archive', dateTag);
+if ~exist(archiveDir, 'dir'); mkdir(archiveDir); end
+
+filesToArchive = {'B_ph2dt.mat', 'C_wave2.mat', 'D_NSP.mat', ...
+                  'E_DLpol.mat', 'F_Cl.mat', 'G_FM.mat'};
+fprintf('--- Archiving previous outputs to archive/%s/ ---\n', dateTag);
+for k = 1:numel(filesToArchive)
+    src = fullfile(outDir, filesToArchive{k});
+    if isfile(src)
+        copyfile(src, fullfile(archiveDir, filesToArchive{k}));
+        fprintf('  Archived: %s\n', filesToArchive{k});
+    end
+end
+fprintf('\n');
+
+%% ============================
+%% ---- STAGE A: Read catalog ----
+%% ============================
+fprintf('--- A: Reading past 30 days of catalog ---\n');
 
 d = dir(fullfile(inDir, 'ph2dtInputCatalog_*.dat'));
 assert(~isempty(d), 'No ph2dtInputCatalog_*.dat files found in %s', inDir);
@@ -60,14 +77,15 @@ end
 [~, ix] = sort([ph2dt.datenum]);
 ph2dt = ph2dt(ix);
 
-B_outfile = fullfile(outDir, sprintf('B_ph2dt_past30days_combined_until_%s.mat', dateTag));
-save(B_outfile, 'ph2dt', '-v7.3');
-fprintf('B done: %d events -> %s\n\n', numel(ph2dt), B_outfile);
+% Stage A output is not used by Stage B (B builds Felix inline from ph2dt in workspace)
+A_outfile = fullfile(outDir, sprintf('A_ph2dt_past30days_combined_until_%s.mat', dateTag));
+save(A_outfile, 'ph2dt', '-v7.3');
+fprintf('A done: %d events -> %s\n\n', numel(ph2dt), A_outfile);
 
 %% ============================
-%% ---- STAGE C: Build Felix ----
+%% ---- STAGE B: Build Felix ----
 %% ============================
-fprintf('--- C: Building Felix struct ---\n');
+fprintf('--- B: Building Felix struct ---\n');
 
 staMap = { ...
     'AXAS1','AS1'; 'AXAS2','AS2'; 'AXCC1','CC1'; ...
@@ -112,50 +130,78 @@ for i = 1:nEv
     Felix(i).PSpair = PSpair;
 end
 
-C_outfile = fullfile(outDir, 'C_ph2dt.mat');
-save(C_outfile, 'Felix');
-fprintf('C done: %d events -> C_ph2dt.mat\n\n', numel(Felix));
+B_outfile = fullfile(outDir, 'B_ph2dt.mat');
+save(B_outfile, 'Felix');
+fprintf('B done: %d events -> B_ph2dt.mat\n\n', numel(Felix));
 
 %% ============================
-%% ---- STAGE D: Get waveforms ----
+%% ---- STAGE C: Get waveforms ----
 %% ============================
-fprintf('--- D: Downloading waveforms ---\n');
-run(fullfile(script_dir, 'D_getwaveform.m'));
+fprintf('--- C: Downloading waveforms ---\n');
+run(fullfile(script_dir, 'C_getwaveform.m'));
+fprintf('C done.\n\n');
+
+%% ============================
+%% ---- STAGE D: NSP ratios + snippets ----
+%% ============================
+fprintf('--- D: Computing NSP ratios and W snippets ---\n');
+run(fullfile(script_dir, 'D_SP_wave.m'));
 fprintf('D done.\n\n');
 
 %% ============================
-%% ---- STAGE E: NSP ratios + snippets ----
+%% ---- STAGE E: ML polarity ----
 %% ============================
-fprintf('--- E: Computing NSP ratios and W snippets ---\n');
-run(fullfile(script_dir, 'E_SP_wave.m'));
+fprintf('--- E: ML polarity prediction ---\n');
+run(fullfile(script_dir, 'E_Po.m'));
 fprintf('E done.\n\n');
 
 %% ============================
-%% ---- STAGE F: ML polarity ----
+%% ---- STAGE F: Matching ----
 %% ============================
-fprintf('--- F: ML polarity prediction ---\n');
-run(fullfile(script_dir, 'F_Po.m'));
+fprintf('--- F: Matching to base catalog ---\n');
+run(fullfile(script_dir, 'F_Cl.m'));
 fprintf('F done.\n\n');
 
 %% ============================
-%% ---- STAGE G: Matching ----
+%% ---- STAGE G: HASH focal mechanisms ----
 %% ============================
-fprintf('--- G: Matching to base catalog ---\n');
-run(fullfile(script_dir, 'G_Cl.m'));
+fprintf('--- G: Computing focal mechanisms ---\n');
+run(fullfile(script_dir, 'G_FM.m'));
 fprintf('G done.\n\n');
 
 %% ============================
-%% ---- STAGE H: HASH focal mechanisms ----
+%% ---- STAGE H: Plot focal mechanisms ----
 %% ============================
-fprintf('--- H: Computing focal mechanisms ---\n');
-run(fullfile(script_dir, 'H_FM.m'));
+fprintf('--- H: Plotting focal mechanisms ---\n');
+run(fullfile(script_dir, 'H_Plot_FM.m'));
 fprintf('H done.\n\n');
 
 %% ============================
-%% ---- STAGE I: Plot FMs + update website ----
+%% ---- STAGE J: 2015 Eruption FM figures ----
 %% ============================
-fprintf('--- I: Plotting focal mechanisms and updating website ---\n');
-run(fullfile(script_dir, 'I_Plot_FM.m'));
+fprintf('--- J: Plotting 2015 eruption focal mechanisms ---\n');
+run(fullfile(script_dir, 'J_Plot_Eruption2015.m'));
+fprintf('J done.\n\n');
+
+%% ============================
+%% ---- STAGE K: Histogram figures ----
+%% ============================
+fprintf('--- K: Plotting activity histograms ---\n');
+run(fullfile(script_dir, 'K_Plot_Histograms.m'));
+fprintf('K done.\n\n');
+
+%% ============================
+%% ---- STAGE L: Full catalog FM histograms (2015-2021, static) ----
+%% ============================
+fprintf('--- L: Plotting full-catalog FM histograms ---\n');
+run(fullfile(script_dir, 'L_Plot_FullCatalog.m'));
+fprintf('L done.\n\n');
+
+%% ============================
+%% ---- STAGE I: Update FM website (final step) ----
+%% ============================
+fprintf('--- I: Updating FM website ---\n');
+run(fullfile(script_dir, 'I_UpdateFMWebsite.m'));
 fprintf('I done (website updated).\n\n');
 
 %% ============================

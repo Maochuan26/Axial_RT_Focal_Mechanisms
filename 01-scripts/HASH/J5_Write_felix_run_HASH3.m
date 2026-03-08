@@ -1,12 +1,5 @@
 % Write amp.dat and Phase.dat
-%clc;clear;
-% To get the totall number of each cluster
-% function [FMangle] = Write_felix_to_HASH3
-% filename=['./Data/Axial_cluster_CC.dat'];
-%clear;
-%filename=['/Users/mczhang/Documents/GitHub/FM/D.dat'];
-%filename=['/Users/mczhang/Documents/GitHub/FM/02-data/Axial_cluster_SAGE.dat'];
-function J4_Write_felix_run_HASH3_New(filename,path)
+function J5_Write_felix_run_HASH3(filename,path)
 fid = fopen(filename,'r');
 Nline=nan;
 while 1
@@ -70,10 +63,10 @@ while 1
         mlon = 60*(abs(str2num(tline(24:32))) - ilon);
         cew = 'W'; %if sign(location.lon)==-1; cew='W'; end;
         dep = str2num(tline(46:49));
-%        eh = 0.2;
-%        ez = 0.3;
-        eh = 0.3;
-        ez = 0.2;
+        eh = 0.2;
+        ez = 0.3;
+        % eh = 0.4;
+        % ez = 0.6;
         mag = 1;
         fprintf(fid2,...
             '%4i%2i%2i%2i%2i%5.2f%2i%c%5.2f%3i%c%5.2f%5.2f %5.2f %5.2f %4.2f%16s\n',...
@@ -102,19 +95,6 @@ fclose(fid);
 fclose(fid2);
 fclose(fid3);
 
-if exist('cfg','var')
-    cd(cfg.hashDir);
-else
-    error('cfg not in workspace — run config.m first');
-end
-!./hash_driver3 < hash.input
-
-% data=readmatrix('hashout1.dat');
-% FMangle(:,1)=data(:,1);
-% FMangle(:,2)=data(:,22);
-% FMangle(:,3)=data(:,23);
-% FMangle(:,4)=data(:,24);
-%addpath /Users/mczhang/Documents/GitHub/Axial-AutoLocate/HASH_code/
-cd ..
-%end
+cd /Users/mczhang/Documents/GitHub/FM/01-scripts/HASH_Manual_5test/
+!./hash_driver3 < hash.input 
 end

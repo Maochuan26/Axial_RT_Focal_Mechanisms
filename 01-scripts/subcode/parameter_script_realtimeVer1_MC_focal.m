@@ -9,7 +9,8 @@ p.tryRemoteData = true;                  % Look for data in IRIS DMC
 p.saveLocalData = true;         %MZ        % Save data locally if obtained from IRIS DMC
 p.retryTimes = 3;                        % Retry this many times if dan nnnnnn n ta not found in IRIS DMC (real time mode)
 p.retryWait = 300;                       % Wait this long before retrying data load (real time mode)
-p.fileGot = '/Users/mczhang/Documents/GitHub/Axial-AutoLocate/get_localDataAxial.mat';    % File with a structure of got (what data has been saved, processed)
+if ~exist('cfg','var'); run('config.m'); end
+p.fileGot = fullfile(cfg.siblingsDir, 'Axial-AutoLocate', 'get_localDataAxial.mat');    % File with a structure of got (what data has been saved, processed)
 %p.fileGot = [];    % mc changed File with a structure of got (what data has been saved, processed)
 
 %% Looping through data
@@ -55,15 +56,16 @@ p.bad.on = datenum('April 1, 2015')-1 + [1 24 24];         % 24];
 p.bad.off = datenum('April 1, 2015')-1 + [29 29 31];       % 30];
 
 %% Output directories
-p.dir.data = '/Users/mczhang/Documents/GitHub/Axial-AutoLocate';
-p.dir.input = '/Users/mczhang/Documents/GitHub/Axial-AutoLocate/AxialOutput/';
-p.dir.output = '/Users/mczhang/Documents/GitHub/Axial-AutoLocate/AxialOutput/';
-p.dir.plotChunkRS = '/Users/mczhang/Documents/GitHub/Axial-AutoLocate/AxialOutputImages/HourlyRSPlot';
-p.dir.plotEventRS = '/Users/mczhang/Documents/GitHub/Axial-AutoLocate/AxialOutputImages/EventRSPlot';
-p.dir.plotEventPickRS = '/Users/mczhang/Documents/GitHub/Axial-AutoLocate/AxialOutputImages/PickRSPlot'; 
-p.dir.plotEventLocationRS = '/Users/mczhang/Documents/GitHub/Axial-AutoLocate/AxialOutputImages/LocationRSPlot'; 
-p.dir.plotEventMomentRS = '/Users/mczhang/Documents/GitHub/Axial-AutoLocate/AxialOutputImages/MomentRSPlot';
-p.dir.plotLocationMap = '/Users/mczhang/Documents/GitHub/Axial-AutoLocate/AxialOutputImages/LocationMapPlot';
+axialAutoLocateDir = fullfile(cfg.siblingsDir, 'Axial-AutoLocate');
+p.dir.data = axialAutoLocateDir;
+p.dir.input = fullfile(axialAutoLocateDir, 'AxialOutput/');
+p.dir.output = fullfile(axialAutoLocateDir, 'AxialOutput/');
+p.dir.plotChunkRS = fullfile(axialAutoLocateDir, 'AxialOutputImages/HourlyRSPlot');
+p.dir.plotEventRS = fullfile(axialAutoLocateDir, 'AxialOutputImages/EventRSPlot');
+p.dir.plotEventPickRS = fullfile(axialAutoLocateDir, 'AxialOutputImages/PickRSPlot');
+p.dir.plotEventLocationRS = fullfile(axialAutoLocateDir, 'AxialOutputImages/LocationRSPlot');
+p.dir.plotEventMomentRS = fullfile(axialAutoLocateDir, 'AxialOutputImages/MomentRSPlot');
+p.dir.plotLocationMap = fullfile(axialAutoLocateDir, 'AxialOutputImages/LocationMapPlot');
          
 % %% Plotting
 % % Hourly plots of triggers
@@ -261,7 +263,7 @@ p.location.control.rmsw1 = 1;
 p.location.control.rmsw2 = 3;
 
 %% Moments
-p.moment.responseMatFile = '/Users/mczhang/Documents/GitHub/Axial-AutoLocate/axial/axial_response2020.mat';
+p.moment.responseMatFile = fullfile(cfg.siblingsDir, 'Axial-AutoLocate', 'axial', 'axial_response2020.mat');
 p.moment.tlimEvent = [-4 8];  % Three seconds wider than for picking to allow noise ratios
 p.moment.iFilt = 3;   % Filtered data best for moments to avoid big DC and low frequency leakage - March 25 2016
 % p.moment.tP = 0.2;
